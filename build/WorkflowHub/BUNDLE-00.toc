@@ -1,3 +1,0 @@
-([('WorkflowHub',
-   '/Users/patrickming/Desktop/Coding Projects/flet_workflow/dist/WorkflowHub',
-   'EXECUTABLE')],)

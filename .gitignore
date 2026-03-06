@@ -1,0 +1,7 @@
+credentials.json
+build/
+config.py
+token.json
+.DS_Store
+.spotify_cache
+__pycache__/

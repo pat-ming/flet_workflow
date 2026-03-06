@@ -1,0 +1,38 @@
+[
+  {
+    "id": "17195b8a-60e7-46fb-97a0-dc0299ceb6b6",
+    "name": "Github",
+    "url": "https://github.com/",
+    "favorite": false
+  },
+  {
+    "id": "f2653a03-b828-444f-9566-6c9982da7852",
+    "name": "Overleaf",
+    "url": "https://www.overleaf.com/project",
+    "favorite": false
+  },
+  {
+    "id": "aad0d52a-a340-48db-b9aa-e9359b6484d5",
+    "name": "Workday",
+    "url": "https://www.myworkday.com/wustl/d/home.htmld",
+    "favorite": false
+  },
+  {
+    "id": "6a3620cf-a8c2-46a1-8c63-c7d466e45edc",
+    "name": "Canvas",
+    "url": "https://wustl.instructure.com/",
+    "favorite": false
+  },
+  {
+    "id": "7d686798-533a-4539-ab4e-243cd28e3e35",
+    "name": "Claude Code Playbook (Very Important, READ!)",
+    "url": "https://github.com/shanraisshan/claude-code-best-practice",
+    "favorite": true
+  },
+  {
+    "id": "0b1709da-b97b-4aa0-8d28-288e1f7eac1f",
+    "name": "GPT Transformer Code (Very Important, READ!)",
+    "url": "http://karpathy.github.io/2026/02/12/microgpt/",
+    "favorite": true
+  }
+]

@@ -1,11 +1,51 @@
 class AppTheme:
-    BG = "#0a0a14"
-    PANEL = "#10101e"
-    CARD = "#14142a"
-    TEXT = "#e2e2f0"
-    TEXT_DIM = "#6b6b8a"
-    BORDER = "#1e1e32"
-    ACCENT = "#6644ff"
+    # ── Dark palette ─────────────────────────────────────────────────────────
+    _D_BG = "#0a0a14"
+    _D_PANEL = "#10101e"
+    _D_CARD = "#14142a"
+    _D_TEXT = "#e2e2f0"
+    _D_TEXT_DIM = "#6b6b8a"
+    _D_BORDER = "#1e1e32"
+    _D_ACCENT = "#6644ff"
+
+    # ── Light palette ────────────────────────────────────────────────────────
+    _L_BG = "#f4f4fb"
+    _L_PANEL = "#ffffff"
+    _L_CARD = "#eeeef8"
+    _L_TEXT = "#1a1a2e"
+    _L_TEXT_DIM = "#8888aa"
+    _L_BORDER = "#d0d0e8"
+    _L_ACCENT = "#6644ff"
+
+    # ── Active colors (mutable, default dark) ────────────────────────────────
+    BG = _D_BG
+    PANEL = _D_PANEL
+    CARD = _D_CARD
+    TEXT = _D_TEXT
+    TEXT_DIM = _D_TEXT_DIM
+    BORDER = _D_BORDER
+    ACCENT = _D_ACCENT
+    dark = True
+
+    @classmethod
+    def set_dark(cls, dark: bool):
+        cls.dark = dark
+        if dark:
+            cls.BG = cls._D_BG
+            cls.PANEL = cls._D_PANEL
+            cls.CARD = cls._D_CARD
+            cls.TEXT = cls._D_TEXT
+            cls.TEXT_DIM = cls._D_TEXT_DIM
+            cls.BORDER = cls._D_BORDER
+            cls.ACCENT = cls._D_ACCENT
+        else:
+            cls.BG = cls._L_BG
+            cls.PANEL = cls._L_PANEL
+            cls.CARD = cls._L_CARD
+            cls.TEXT = cls._L_TEXT
+            cls.TEXT_DIM = cls._L_TEXT_DIM
+            cls.BORDER = cls._L_BORDER
+            cls.ACCENT = cls._L_ACCENT
 
     # Rainbow ring: full 360° of hue spans the entire perimeter at all times.
     # As snake_pos advances 0→1, the whole ring rotates through one full cycle.

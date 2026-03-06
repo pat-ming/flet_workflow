@@ -2,45 +2,64 @@ import asyncio
 import flet as ft
 from theme import AppTheme
 from views.todo_view import TodoView
+from views.job_view import JobView
 from views.spotify_view import SpotifyView
+from views.links_view import LinksView
+from views.hub_view import HubView
 
 
 async def main(page: ft.Page):
     page.title = "Workflow Hub"
     page.bgcolor = AppTheme.BG
     page.padding = 0
-    page.window.width = 1100
-    page.window.height = 720
+    page.window.width = 1200
+    page.window.height = 760
     page.window.min_width = 900
     page.window.min_height = 600
     page.theme_mode = ft.ThemeMode.DARK
     page.fonts = {}
 
-    # ── views ─────────────────────────────────────────────────────────────────
+    dark_mode = {"value": True}
+    AppTheme.set_dark(True)
+
+    # ── views (persistent instances) ─────────────────────────────────────────
     todo_view = TodoView(page)
+    job_view = JobView(page)
     spotify_view = SpotifyView(page)
+    links_view = LinksView(page)
+    hub_view = HubView(page, todo_view, job_view, links_view)
 
-    todo_panel = todo_view.build()
-    spotify_panel = spotify_view.build()
-
-    view_list = [todo_view, spotify_view]
+    # Nav order: 0=Hub, 1=Tasks, 2=Jobs, 3=Spotify, 4=Links
+    view_list = [hub_view, todo_view, job_view, spotify_view, links_view]
     active_index = {"value": 0}
+    panels = {}
 
-    # ── content area ──────────────────────────────────────────────────────────
-    content_area = ft.Container(
-        content=todo_panel,
-        expand=True,
-    )
+    def build_all_panels():
+        # Build todo/jobs/links first so mini_list_cols are populated before hub uses them
+        panels["todo"] = todo_view.build()
+        panels["jobs"] = job_view.build()
+        panels["links"] = links_view.build()
+        panels["hub"] = hub_view.build()
+        panels["spotify"] = spotify_view.build()
 
-    # ── sidebar nav ───────────────────────────────────────────────────────────
+    def _panel_order():
+        return [panels["hub"], panels["todo"], panels["jobs"], panels["spotify"], panels["links"]]
+
+    # ── content area ─────────────────────────────────────────────────────────
+    content_area = ft.Container(expand=True)
+
+    # ── sidebar nav ──────────────────────────────────────────────────────────
     NAV_ITEMS = [
+        (ft.Icons.HOME_ROUNDED, "Hub"),
         (ft.Icons.TASK_ALT_ROUNDED, "Tasks"),
+        (ft.Icons.WORK_OUTLINE_ROUNDED, "Jobs"),
         (ft.Icons.MUSIC_NOTE_ROUNDED, "Spotify"),
+        (ft.Icons.LINK_ROUNDED, "Links"),
     ]
 
-    nav_buttons: list[ft.Container] = []
+    nav_buttons: list[tuple] = []
 
-    def make_nav_btn(icon, label, index) -> ft.Container:
+    def make_nav_btn(icon, label, index) -> tuple:
         indicator = ft.Container(
             width=3,
             height=36,
@@ -66,7 +85,7 @@ async def main(page: ft.Page):
         )
         btn = ft.Container(
             content=ft.Row([indicator, inner], spacing=0),
-            on_click=lambda e, i=index: switch_view(i),
+            on_click=lambda _, i=index: switch_view(i),
             border_radius=10,
             ink=True,
         )
@@ -85,21 +104,65 @@ async def main(page: ft.Page):
                 ind.bgcolor = "transparent"
                 inn.bgcolor = "transparent"
 
-    _apply_active(0)
+    # ── theme toggle ─────────────────────────────────────────────────────────
+    wh_text = ft.Text("WH", size=20, weight=ft.FontWeight.BOLD, color=AppTheme.ACCENT)
 
+    theme_btn = ft.IconButton(
+        icon=ft.Icons.LIGHT_MODE,
+        icon_color=AppTheme.TEXT_DIM,
+        icon_size=20,
+        tooltip="Switch to light mode",
+    )
+
+    def toggle_theme(_):
+        dark_mode["value"] = not dark_mode["value"]
+        AppTheme.set_dark(dark_mode["value"])
+
+        build_all_panels()
+        content_area.content = _panel_order()[active_index["value"]]
+
+        page.bgcolor = AppTheme.BG
+        page.theme_mode = ft.ThemeMode.DARK if dark_mode["value"] else ft.ThemeMode.LIGHT
+
+        sidebar_container.bgcolor = AppTheme.PANEL
+        sidebar_container.border = ft.border.only(
+            right=ft.BorderSide(2, AppTheme.BORDER)
+        )
+
+        for nav_tuple in nav_buttons:
+            col = nav_tuple[2].content
+            col.controls[0].color = AppTheme.TEXT
+            col.controls[1].color = AppTheme.TEXT_DIM
+
+        _apply_active(active_index["value"])
+
+        wh_text.color = AppTheme.ACCENT
+        theme_btn.icon = ft.Icons.LIGHT_MODE if dark_mode["value"] else ft.Icons.DARK_MODE
+        theme_btn.tooltip = (
+            "Switch to light mode" if dark_mode["value"] else "Switch to dark mode"
+        )
+        theme_btn.icon_color = AppTheme.TEXT_DIM
+
+        page.update()
+
+    theme_btn.on_click = toggle_theme
+
+    # ── sidebar container ────────────────────────────────────────────────────
     sidebar_container = ft.Container(
         content=ft.Column(
             [
                 ft.Container(
-                    content=ft.Text(
-                        "WH", size=20, weight=ft.FontWeight.BOLD,
-                        color=AppTheme.ACCENT,
-                    ),
+                    content=wh_text,
                     padding=ft.padding.only(bottom=16, top=4),
                     alignment=ft.Alignment(0, 0),
                 ),
                 *[btn for btn, _, _ in nav_buttons],
                 ft.Container(expand=True),
+                ft.Container(
+                    content=theme_btn,
+                    alignment=ft.Alignment(0, 0),
+                    padding=ft.padding.only(bottom=8),
+                ),
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=6,
@@ -110,7 +173,7 @@ async def main(page: ft.Page):
         border=ft.border.only(right=ft.BorderSide(2, AppTheme.BORDER)),
     )
 
-    # ── top RGB accent bar (gradient snake) ──────────────────────────────────
+    # ── top RGB accent bar ────────────────────────────────────────────────────
     top_bar = ft.Container(
         height=3,
         gradient=ft.LinearGradient(
@@ -121,15 +184,22 @@ async def main(page: ft.Page):
         ),
     )
 
-    # ── switch view ───────────────────────────────────────────────────────────
+    # ── switch view ──────────────────────────────────────────────────────────
     def switch_view(index: int):
         active_index["value"] = index
-        panels = [todo_panel, spotify_panel]
-        content_area.content = panels[index]
+        content_area.content = _panel_order()[index]
         _apply_active(index)
         page.update()
 
-    # ── main layout ───────────────────────────────────────────────────────────
+    # Give hub_view a reference to switch_view so section headers can navigate
+    hub_view.switch_view_fn = switch_view
+
+    # ── initial build ────────────────────────────────────────────────────────
+    build_all_panels()
+    content_area.content = panels["hub"]
+    _apply_active(0)
+
+    # ── main layout ──────────────────────────────────────────────────────────
     page.add(
         ft.Column(
             [
@@ -158,7 +228,6 @@ async def main(page: ft.Page):
         while True:
             snake_pos = (snake_pos + 0.003) % 1.0
 
-            # Top bar: gradient snake flowing left → right
             colors, stops = AppTheme.snake_top_gradient(snake_pos)
             top_bar.gradient = ft.LinearGradient(
                 begin=ft.Alignment(-1, 0),
@@ -168,13 +237,11 @@ async def main(page: ft.Page):
             )
             top_bar.update()
 
-            # Sidebar right border: snake passes through the left-side position
             sidebar_container.border = ft.border.only(
                 right=ft.BorderSide(2, AppTheme.snake_color(0.75, snake_pos))
             )
             sidebar_container.update()
 
-            # Active nav indicator: show the snake head color
             head_color = AppTheme.hsv_to_hex(snake_pos * 360)
             _apply_active(active_index["value"], head_color)
             for _, ind, _ in nav_buttons:
@@ -183,7 +250,6 @@ async def main(page: ft.Page):
                 except Exception:
                     pass
 
-            # Active view panel border (per-side snake colors)
             view_list[active_index["value"]].update_rgb(snake_pos)
 
             await asyncio.sleep(0.03)
@@ -191,7 +257,7 @@ async def main(page: ft.Page):
     # ── Spotify polling loop ──────────────────────────────────────────────────
     async def spotify_poll():
         while True:
-            if active_index["value"] == 1:
+            if active_index["value"] == 3:  # Spotify is now index 3
                 try:
                     await asyncio.to_thread(spotify_view.update_playback)
                     page.update()
@@ -201,6 +267,7 @@ async def main(page: ft.Page):
 
     page.run_task(rgb_loop)
     page.run_task(spotify_poll)
+    page.run_task(hub_view.clock_loop)
 
 
 ft.run(main)

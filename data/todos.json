@@ -1,7 +1,20 @@
 [
   {
-    "id": "41c22e6d-147a-4051-adf4-932258bf3bdb",
-    "text": "stats #5",
-    "done": true
+    "id": "cae368e5-8922-4ff2-87e8-99b8848b6319",
+    "text": "foundations reflections",
+    "done": false,
+    "date": null
+  },
+  {
+    "id": "0c250d9a-e2af-4eca-86fc-8a35fc14a1a5",
+    "text": "foundations hw6",
+    "done": false,
+    "date": null
+  },
+  {
+    "id": "6e5748a7-4435-4f08-bef4-7fc02e7ce91b",
+    "text": "linalg hw6",
+    "done": false,
+    "date": null
   }
 ]
